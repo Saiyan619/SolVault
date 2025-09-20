@@ -1,35 +1,64 @@
-import { useMemo, type FC, type ReactNode } from 'react';
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+// WalletContextProvider.tsx
+import { FC, useMemo } from "react";
 import {
-    PhantomWalletAdapter,
-    SolflareWalletAdapter,
-} from '@solana/wallet-adapter-wallets';
-import { clusterApiUrl } from '@solana/web3.js';
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import {
+  SolanaMobileWalletAdapter,
+  createDefaultAddressSelector,
+  createDefaultAuthorizationResultCache,
+  createDefaultWalletNotFoundHandler,
+} from "@solana-mobile/wallet-adapter-mobile";
 
-export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
-    // You can set this to 'mainnet-beta', 'testnet', or 'devnet'
-    const network = WalletAdapterNetwork.Devnet;
-    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-   
-    const wallets = useMemo(
-        () => [
-            new PhantomWalletAdapter(),
-            new SolflareWalletAdapter({ network }),
-        ],
-        [network]
-    );
+import "@solana/wallet-adapter-react-ui/styles.css";
 
-    return (
-        <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={wallets}>
-                <WalletModalProvider>
-                    {children}
-                </WalletModalProvider>
-            </WalletProvider>
-        </ConnectionProvider>
-    );
+type Props = {
+  children: React.ReactNode;
+};
+
+const WalletContextProvider: FC<Props> = ({ children }) => {
+  // ✅ Your Solana RPC endpoint
+  const endpoint = "https://api-devnet.helius.xyz";
+
+  // ✅ Your deployed dApp URL (required for Phantom mobile deep linking)
+  const APP_URL = "https://sol-vault-kappa.vercel.app";
+
+  const wallets = useMemo(
+    () => [
+      // 📱 Mobile wallet adapter (priority for mobile)
+      new SolanaMobileWalletAdapter({
+        addressSelector: createDefaultAddressSelector(),
+        appIdentity: {
+          name: "Sol Vault",
+          uri: APP_URL,
+          icon: `${APP_URL}/favicon.ico`,
+        },
+        authorizationResultCache: createDefaultAuthorizationResultCache(),
+        chain: WalletAdapterNetwork.Devnet,
+        onWalletNotFound: createDefaultWalletNotFoundHandler(),
+      }),
+
+      // 🖥️ Desktop extension wallets
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+    ],
+    []
+  );
+
+  return (
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider wallets={wallets} autoConnect={true}>
+        <WalletModalProvider>{children}</WalletModalProvider>
+      </WalletProvider>
+    </ConnectionProvider>
+  );
 };
 
 export default WalletContextProvider;

@@ -463,11 +463,12 @@ export const useCLoseVault = () => {
     const wallet = useAnchorWallet();
     const closeVault = async ({ mintAddress, clientAddress }: CloseParams) => {
         if (!wallet) {
-            console.error("Wallet is not connected");
+            throw new Error("Wallet is not connected");
             return;
         }
         if (clientAddress === "") {
             console.error("Client address is required");
+            throw new Error("Client address is required");
             return;
         }
 

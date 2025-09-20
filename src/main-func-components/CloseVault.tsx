@@ -85,7 +85,7 @@ const CloseVault = () => {
                                         className="w-full"
                       
                                       >
-                                        Withdraw
+                                        Close Vault
                                       </Button>
                                     }
                                   </AlertDialogTrigger>
