@@ -1,61 +1,21 @@
 import { useMemo } from "react";
-import type { FC } from "react";
-
-import {
-  ConnectionProvider,
-  WalletProvider,
-} from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from "@solana/wallet-adapter-wallets";
-import {
-  SolanaMobileWalletAdapter,
-  createDefaultAddressSelector,
-  createDefaultAuthorizationResultCache,
-  createDefaultWalletNotFoundHandler,
-} from "@solana-mobile/wallet-adapter-mobile";
-
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { clusterApiUrl } from "@solana/web3.js";
+// Import the wallet adapter styles
 import "@solana/wallet-adapter-react-ui/styles.css";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-const WalletContextProvider: FC<Props> = ({ children }) => {
-  // ✅ Your Solana RPC endpoint
-  const endpoint = "https://api-devnet.helius.xyz";
-
-  // ✅ Your deployed dApp URL (required for Phantom mobile deep linking)
-  const APP_URL = "https://sol-vault-kappa.vercel.app";
-
-  const wallets = useMemo(
-    () => [
-      // 📱 Mobile wallet adapter (priority for mobile)
-      new SolanaMobileWalletAdapter({
-        addressSelector: createDefaultAddressSelector(),
-        appIdentity: {
-          name: "Sol Vault",
-          uri: APP_URL,
-          icon: `${APP_URL}/favicon.ico`,
-        },
-        authorizationResultCache: createDefaultAuthorizationResultCache(),
-        chain: WalletAdapterNetwork.Devnet,
-        onWalletNotFound: createDefaultWalletNotFoundHandler(),
-      }),
-
-      // 🖥️ Desktop extension wallets
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-    ],
-    []
-  );
-
+const WalletContextProvider = ({ children }:any) => {
+  // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'
+  const network = WalletAdapterNetwork.Devnet;
+ 
+  // You can also provide a custom RPC endpoint
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect={true}>
+      <WalletProvider wallets={[]} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

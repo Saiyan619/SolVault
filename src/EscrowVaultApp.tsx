@@ -12,7 +12,7 @@ import SettleTokens from './main-func-components/SettleTokens';
 import WithDrawTokens from './main-func-components/WithDrawTokens';
 import CloseVault from './main-func-components/CloseVault';
 import VaultDetails from './main-func-components/VaultDetails';
-import ConnectWalletButton from './main-func-components/WalletButton';
+import WalletButton from './main-func-components/WalletButton';
 
 export const EscrowVaultApp = () => {
 
@@ -30,7 +30,7 @@ export const EscrowVaultApp = () => {
                 SolVault
               </h1>
             </div>
-            <ConnectWalletButton />
+            <WalletButton />
           </div>
         </div>
       </header>

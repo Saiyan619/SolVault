@@ -1,13 +1,25 @@
 import { StrictMode } from 'react'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import WalletContextProvider from './WalletContextProvider'
-
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+    }
+  }
+});
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <WalletContextProvider>
+        <WalletContextProvider>
+
+      <QueryClientProvider client={queryClient}>
       <App />
-    </WalletContextProvider>
+      </QueryClientProvider>
+          </WalletContextProvider>
+
   </StrictMode>
 )
