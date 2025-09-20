@@ -1,5 +1,6 @@
-// WalletContextProvider.tsx
-import { FC, useMemo } from "react";
+import { useMemo } from "react";
+import type { FC } from "react";
+
 import {
   ConnectionProvider,
   WalletProvider,

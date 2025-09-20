@@ -3,7 +3,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect } from "react";
 
 export default function WalletButton() {
-  const { select, wallets, publicKey, disconnect } = useWallet();
+  const { publicKey } = useWallet();
 
   // Handle mobile wallet connection more explicitly
   useEffect(() => {
