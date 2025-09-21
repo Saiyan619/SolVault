@@ -58,7 +58,7 @@ const CloseVault = () => {
                                       </div>
 
            <div className="space-y-2">
-            <Label className="text-foreground">Token Type</Label>
+            <Label className="text-foreground">Vault Token Type</Label>
             <Select value={selectedToken} onValueChange={setSelectedToken}>
               <SelectTrigger className="bg-background/50 border-border text-foreground">
                 <SelectValue />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 // import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Program, AnchorProvider } from "@coral-xyz/anchor";
@@ -9,17 +10,27 @@ import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
 import idl from '@/solana_escrow_vault.json';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-
+import { Buffer } from "buffer";
 
 const PROGRAM_ID = new PublicKey(import.meta.env.VITE_PROGRAM_ID);
 
+// Map known token mints to friendly names
+const TOKEN_LABELS: Record<string, string> = {
+  "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr": "USDC (Devnet)",
+  "EJwZgeZrdC8TXTQbQBoL6bfuAnFUUy1PVCMB4DYPzVaS": "USDT (Devnet)",
+  "So11111111111111111111111111111111111111112": "Wrapped SOL",
+};
 
 const VaultDetails = () => {
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
   const [clientAddress, setClientAddress] = useState('');
   const [merchantAddress, setMerchantAddress] = useState('');
-  const [vaultBalance, setvaultBalance] = useState(null)
+  const [vaultBalance, setVaultBalance] = useState<string | null>(null);
+  const [selectedToken, setSelectedToken] = useState('');
+  const [merchant, setMerchant] = useState("");
+  const [client, setClient] = useState("");
+  const [tokenMint, setTokenMint] = useState("");
 
   const getVaultDetails = async (merchantAddress: string, clientAddress: string, mintAddress: string) => {
     if (!wallet) {
@@ -28,6 +39,7 @@ const VaultDetails = () => {
     }
     if (clientAddress === "" && merchantAddress === "") {
       console.error("client and merchant address are required");
+      return;
     }
 
     const provider = new AnchorProvider(connection, wallet, {
@@ -37,66 +49,84 @@ const VaultDetails = () => {
     const program = new Program(idl as any, provider);
 
     const merchantPubKey = new PublicKey(merchantAddress.trim());
-    const clientPubkey = new PublicKey(clientAddress.trim());
+    const clientPubKey = new PublicKey(clientAddress.trim());
     const mintPubKey = new PublicKey(mintAddress.trim());
 
-    const [vaultInfoPDA] = await PublicKey.findProgramAddressSync([
-      Buffer.from("vault_info"),
-      merchantPubKey.toBuffer(),
-      clientPubkey.toBuffer(),
-      mintPubKey.toBuffer()
-    ], PROGRAM_ID);
+    const [vaultInfoPDA] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("vault_info"),
+        merchantPubKey.toBuffer(),
+        clientPubKey.toBuffer(),
+        mintPubKey.toBuffer()
+      ],
+      PROGRAM_ID
+    );
 
     try {
-      console.log("fetching vault details......");
-      const vaultInfoAccount = await(program.account as any).vaultInfo.fetch(vaultInfoPDA);
-      console.log("Vault Info Account found:", vaultInfoAccount);
-      console.log("Vaukt Address:", vaultInfoPDA.toBase58());
-      console.log("Stored amount:", vaultInfoAccount.amount.toString());
-      setvaultBalance(vaultInfoAccount.amount.toString());
-      console.log("Stored merchant:", vaultInfoAccount.merchant.toString());
-      console.log("Stored target:", vaultInfoAccount.targetAcc.toString());
+      const vaultInfoAccount = await (program.account as any).vaultInfo.fetch(vaultInfoPDA);
+
+
+
+      setVaultBalance(vaultInfoAccount.amount.toString());
+
+      setMerchant(vaultInfoAccount.merchant.toString());
+
+      setClient(vaultInfoAccount.targetAcc.toString());
+
+      if (vaultInfoAccount.mint) {
+        const mint = vaultInfoAccount.mint.toString();
+        console.log("Stored token mint:", mint);
+        setTokenMint(mint);
+      }
     } catch (error) {
       console.error("Error fetching vault details:", error);
       throw error;
     }
-  }
+  };
+
   return (
     <div>
       <div>
         <h2>Get Current Vault Details</h2>
         <div>
-          <Label htmlFor="deposit-amount" className="text-foreground">Merchant Address</Label>
-          <div className="relative">
-            <Input
-              id="deposit-amount"
-              placeholder="0xfgn4j5g398onbwtlkioklr..."
-              value={merchantAddress}
-              type='text'
-              onChange={(e) => setMerchantAddress(e.target.value)}
-              className="bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:ring-vault-green pr-16"
-            />
+          <Label className="text-foreground">Merchant Address</Label>
+          <Input
+            placeholder="Merchant pubkey..."
+            value={merchantAddress}
+            type="text"
+            onChange={(e) => setMerchantAddress(e.target.value)}
+            className="bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:ring-vault-green"
+          />
 
+          <Label className="text-foreground mt-3">Client Address</Label>
+          <Input
+            placeholder="Client pubkey..."
+            value={clientAddress}
+            type="text"
+            onChange={(e) => setClientAddress(e.target.value)}
+            className="bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:ring-vault-green"
+          />
+
+          <div className="space-y-2 mt-3">
+            <Label className="text-foreground">Vault Token Type</Label>
+            <Select value={selectedToken} onValueChange={setSelectedToken}>
+              <SelectTrigger className="bg-background/50 border-border text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr">USDC (Devnet)</SelectItem>
+                <SelectItem value="EJwZgeZrdC8TXTQbQBoL6bfuAnFUUy1PVCMB4DYPzVaS">USDT (Devnet)</SelectItem>
+                <SelectItem value="So11111111111111111111111111111111111111112">Wrapped SOL</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <Label htmlFor="deposit-amount" className="text-foreground">Client Address</Label>
-          <div className="relative">
-            <Input
-              id="deposit-amount"
-              placeholder="0xfgn4j5g398onbwtlkioklr..."
-              value={clientAddress}
-              type='text'
-              onChange={(e) => setClientAddress(e.target.value)}
-              className="bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:ring-vault-green pr-16"
-            />
-
-          </div>
-
-          <Button className='mt-5' onClick={() => { getVaultDetails( merchantAddress, clientAddress, "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr") }}>Get Vault Details</Button>
-
-
+          <Button className="mt-5" onClick={() => getVaultDetails(merchantAddress, clientAddress, selectedToken)}>
+            Get Vault Details
+          </Button>
         </div>
       </div>
+
       <Card className="bg-gradient-card border-border shadow-card mt-5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
@@ -107,39 +137,35 @@ const VaultDetails = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              {/* <div>
-                <span className="text-muted-foreground text-sm">Vault Address:</span>
-                <p className="font-mono text-foreground">9xF2...4pLm</p>
-              </div> */}
               <div>
                 <span className="text-muted-foreground text-sm">Merchant:</span>
-                <p className="font-mono text-foreground">5kR8...9nQw</p>
+                <p className="font-mono text-foreground">{merchant || "Nil"}</p>
               </div>
+
+              <div>
+                <span className="text-muted-foreground text-sm">Client:</span>
+                <p className="font-mono text-foreground">{client || "Nil"}</p>
+              </div>
+
               <div>
                 <span className="text-muted-foreground text-sm">Token Mint:</span>
-                <p className="text-foreground">USDC</p>
+                <p className="text-foreground">
+                  {(TOKEN_LABELS[tokenMint] ?? tokenMint) || "Nil"}
+                </p>
               </div>
+
               <div>
                 <span className="text-muted-foreground text-sm">Current Balance:</span>
-                <p className="font-mono text-vault-green font-semibold text-2xl">{vaultBalance} USDC</p>
+                <p className="font-mono text-vault-green font-semibold text-2xl">
+                  {vaultBalance ? `${vaultBalance} ${TOKEN_LABELS[tokenMint]?.split(" ")[0] ?? "Tokens"}` : "Nil"}
+                </p>
               </div>
-            </div>
-            <div className="space-y-4">
-
-              {/* <div>
-                <span className="text-muted-foreground text-sm">Status:</span>
-                <Badge variant="default" className="ml-2">Active</Badge>
-              </div> */}
-              {/* <div>
-                <span className="text-muted-foreground text-sm">Created:</span>
-                <p className="text-foreground">2 days ago</p>
-              </div> */}
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default VaultDetails
+export default VaultDetails;

@@ -67,3 +67,59 @@
             </div>
           </CardContent>
         </Card> */}
+
+
+
+<!-- Logs for initailize vault -->
+console.log("Initializing vault with coral-xyz/anchor...");
+        console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "initialize"));
+console.log("Wallet public key:", wallet.publicKey.toBase58());
+            console.log("Mint address:", mintAddress);
+            console.log("Client address:", targetUserAddress);
+            console.log("Merchant address:", wallet.publicKey.toBase58());
+console.log('Derived addresses:');
+            console.log('Vault Info PDA:', vaultInfoPDA.toBase58());
+            console.log('Vault Token PDA:', vaultTokenPDA.toBase58());
+ console.error("Vault creation failed:", error.message);
+
+
+ <!-- Logs for deposit vault -->
+
+         console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "deposit"));
+
+            console.log("Starting deposit of amount:", amount);
+
+            console.log('Deposit transaction signature:', tx);
+
+<!-- Logs for withdraw token -->
+   console.log("Withdrawing tokens...");
+        console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "withdraw"));
+
+ 
+
+ <!--Logs for Settlement  -->
+         console.log("settle boys.....")
+
+            console.log("stil...settle boys.....")
+
+            console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "settlement"));
+
+<!-- Logs for close vault -->
+console.log("Closing vault...");
+        console.log("Mint Address:", mintAddress);
+        console.log("Client Address:", clientAddress);
+        console.log("Wallet (Merchant) Address:", wallet.publicKey.toString());
+   console.log("Vault Info PDA:", vaultInfoPDA.toString());
+            console.log("Vault Token PDA:", vaultTokenPDA.toString());
+        
+
+       <!-- Logs for vault details -->
+
+             console.log("Fetching vault details...");
+
+    console.log("Vault Info Account found:", vaultInfoAccount);
+      console.log("Vault Address:", vaultInfoPDA.toBase58());
+      console.log("Stored amount:", vaultInfoAccount.amount.toString());
+      console.log("Stored merchant:", vaultInfoAccount.merchant.toString());
+
+      console.log("Stored client:", vaultInfoAccount.targetAcc.toString());

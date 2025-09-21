@@ -3,6 +3,7 @@ import { Program, AnchorProvider, BN } from "@coral-xyz/anchor";
 import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
+import { Buffer } from "buffer";
 import idl from '@/solana_escrow_vault.json';
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -32,14 +33,10 @@ export const useCreateVault = () => {
 
 
 
-        console.log("Initializing vault with coral-xyz/anchor...");
-        console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "initialize"));
+        
 
         try {
-            console.log("Wallet public key:", wallet.publicKey.toBase58());
-            console.log("Mint address:", mintAddress);
-            console.log("Client address:", targetUserAddress);
-            console.log("Merchant address:", wallet.publicKey.toBase58());
+            
 
             // Create provider with coral-xyz/anchor
             const provider = new AnchorProvider(connection, wallet, {
@@ -76,9 +73,7 @@ export const useCreateVault = () => {
                 PROGRAM_ID
             );
 
-            console.log('Derived addresses:');
-            console.log('Vault Info PDA:', vaultInfoPDA.toBase58());
-            console.log('Vault Token PDA:', vaultTokenPDA.toBase58());
+            
 
 
             // Important reminder to myself!!: Rust struct uses snake_case, but the client expects camelCase
@@ -129,7 +124,7 @@ export const useCreateVault = () => {
             });
         },
         onError: (error) => {
-            console.error("Vault creation failed:", error.message);
+           
             toast.error(`Failed to create vault. Please try again.: ${error.message}`);
         }
     });
@@ -156,9 +151,7 @@ export const useDepositToVault = () => {
         if (merchantAddress === "") {
             console.error("Merchant address is required");
         }
-        console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "deposit"));
         try {
-            console.log("Starting deposit of amount:", amount);
 
             const provider = new AnchorProvider(connection, wallet, {
                 commitment: "confirmed"
@@ -225,7 +218,6 @@ export const useDepositToVault = () => {
                 }).rpc();
 
             await connection.confirmTransaction(tx, 'confirmed');
-            console.log('Deposit transaction signature:', tx);
 
             return tx;
         } catch (error) {
@@ -368,11 +360,8 @@ export const useSettleTokens = () => {
             console.error("wallet not connected!!!");
             return;
         }
-        console.log("settle boys.....")
         try {
-            console.log("stil...settle boys.....")
 
-            console.log("IDL initialize method:", idl.instructions.find((i: any) => i.name === "settlement"));
             const provider = new AnchorProvider(connection, wallet, {
                 commitment: "confirmed"
             });
@@ -472,10 +461,7 @@ export const useCLoseVault = () => {
             return;
         }
 
-        console.log("Closing vault...");
-        console.log("Mint Address:", mintAddress);
-        console.log("Client Address:", clientAddress);
-        console.log("Wallet (Merchant) Address:", wallet.publicKey.toString());
+        
 
         try {
             const provider = new AnchorProvider(connection, wallet, {
@@ -502,8 +488,7 @@ export const useCLoseVault = () => {
                 mintPubKey.toBuffer()
             ], PROGRAM_ID);
 
-            console.log("Vault Info PDA:", vaultInfoPDA.toString());
-            console.log("Vault Token PDA:", vaultTokenPDA.toString());
+         
 
             // Check if accounts exist before trying to close
             try {
