@@ -13,7 +13,6 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 const WalletContextProvider = ({ children }: any) => {
   const network = WalletAdapterNetwork.Devnet;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
   // Register the wallets you want to support
   const wallets = useMemo(
     () => [
